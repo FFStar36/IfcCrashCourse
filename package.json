@@ -1,0 +1,31 @@
+{
+  "name": "terminplan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "devStart": "nodemon app.js",
+    "build": "rollup -c ./views/ifcDisplay/rollup.config.js",
+    "watch": "rollup -w -c ./views/ifcDisplay/rollup.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dxf-writer": "^1.18.2",
+    "ejs": "^3.1.8",
+    "ejs-mate": "^4.0.0",
+    "express": "^4.18.1",
+    "nodemon": "^2.0.19",
+    "three": "^0.143.0",
+    "web-ifc-three": "^0.0.119",
+    "web-ifc-viewer": "^1.0.209"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.78.0"
+  }
+}
