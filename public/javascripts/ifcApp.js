@@ -1,18 +1,9 @@
-// import { Color } from '';
-// import { IfcViewerAPI } from '';
-// // import { Drawing } from '';
-
 import { Color, LineBasicMaterial, MeshBasicMaterial } from '../../node_modules/three';
 import { IfcViewerAPI } from '../../node_modules/web-ifc-viewer';
-import Drawing from '../../node_modules/dxf-writer'; // src/Drawing
-// const Drawing = import('../../node_modules/dxf-writer');
+import Drawing from '../../node_modules/dxf-writer';
 
 const container = document.getElementById('viewer-container');
 const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
-
-// Create grid and axes
-// viewer.grid.setGrid();
-// viewer.axes.setAxes();
 
 async function loadIfc(url) {
 
@@ -32,10 +23,6 @@ async function loadIfc(url) {
     //     console.log(formatted + '%');
     // });
 
-    // Picking
-    window.ondblclick = () => viewer.IFC.selector.pickIfcItem();
-    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
-
     // Setup camera controls
     const controls = viewer.context.ifcCamera.cameraControls;
     controls.setPosition(7.6, 4.3, 24.8, false);
@@ -52,7 +39,6 @@ async function loadIfc(url) {
     await viewer.edges.create('example', model.modelID, lineMaterial, baseMaterial);
 
     // Floor plan viewing
-
     const allPlans = viewer.plans.getAll(model.modelID);
 
     const container = document.getElementById('button-container');
@@ -103,6 +89,47 @@ async function loadIfc(url) {
             const storey = storeys.find(storey => storey.expressID === currentPlan.expressID);
             drawProjectedItems(storey, currentPlan, model.modelID);
         };
+    }
+
+    ////////////////// Events/ Buttons
+    // Schnitte
+    let clippingPlanesActive = false
+    const clipperButton = document.querySelector("#clipperButton")
+
+    clipperButton.onclick = () =>{
+        clippingPlanesActive = !clippingPlanesActive
+        viewer.clipper.active = clippingPlanesActive
+    }
+
+    //Messungen
+    let measureActive = false
+    const measureButton = document.querySelector("#measureButton")
+
+    measureButton.onclick = () =>{
+        measureActive = !measureActive
+        viewer.dimensions.active = measureActive;
+        viewer.dimensions.previewActive = measureActive;
+    }
+
+    window.ondblclick = () => {
+        viewer.IFC.selector.pickIfcItem();
+        if(clippingPlanesActive){
+            viewer.clipper.createPlane()
+        }
+        if(measureActive){
+            viewer.dimensions.create();
+        }
+    }
+
+    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
+
+    window.onkeydown = (event) => {
+        if(event.code === 'Delete' && clippingPlanesActive) {
+            viewer.clipper.deleteAllPlanes()
+        }
+        if(event.code === 'Delete' && measureActive) {
+            viewer.dimensions.delete();
+        }
     }
 }
 
@@ -158,7 +185,6 @@ async function drawProjectedItems(storey, plan, modelID) {
     // Clean up
     edges.geometry.dispose();
 
-
     // Draw all sectioned items
     viewer.dxf.drawNamedLayer(plan.name, plan, 'thick', 'Section', Drawing.ACI.RED, 'CONTINUOUS');
     viewer.dxf.drawNamedLayer(plan.name, plan, 'thin', 'Section_Secondary', Drawing.ACI.CYAN, 'CONTINUOUS');
@@ -171,3 +197,4 @@ async function drawProjectedItems(storey, plan, modelID) {
     link.click();
     link.remove();
 }
+

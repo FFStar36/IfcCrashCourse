@@ -1,5 +1,4 @@
-// Test
-// Test2
+
 const express = require('express');
 const ejsMate = require('ejs-mate');
 const path = require('path');

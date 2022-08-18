@@ -114707,15 +114707,8 @@ var Drawing_1 = Drawing$1;
 
 var Drawing = /*@__PURE__*/getDefaultExportFromCjs(dxfWriter.exports);
 
-// import { Color } from '';
-// const Drawing = import('../../node_modules/dxf-writer');
-
 const container = document.getElementById('viewer-container');
 const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
-
-// Create grid and axes
-// viewer.grid.setGrid();
-// viewer.axes.setAxes();
 
 async function loadIfc(url) {
 
@@ -114735,10 +114728,6 @@ async function loadIfc(url) {
     //     console.log(formatted + '%');
     // });
 
-    // Picking
-    window.ondblclick = () => viewer.IFC.selector.pickIfcItem();
-    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
-
     // Setup camera controls
     const controls = viewer.context.ifcCamera.cameraControls;
     controls.setPosition(7.6, 4.3, 24.8, false);
@@ -114755,7 +114744,6 @@ async function loadIfc(url) {
     await viewer.edges.create('example', model.modelID, lineMaterial, baseMaterial);
 
     // Floor plan viewing
-
     const allPlans = viewer.plans.getAll(model.modelID);
 
     const container = document.getElementById('button-container');
@@ -114807,6 +114795,47 @@ async function loadIfc(url) {
             drawProjectedItems(storey, currentPlan, model.modelID);
         };
     }
+
+    ////////////////// Events/ Buttons
+    // Schnitte
+    let clippingPlanesActive = false;
+    const clipperButton = document.querySelector("#clipperButton");
+
+    clipperButton.onclick = () =>{
+        clippingPlanesActive = !clippingPlanesActive;
+        viewer.clipper.active = clippingPlanesActive;
+    };
+
+    //Messungen
+    let measureActive = false;
+    const measureButton = document.querySelector("#measureButton");
+
+    measureButton.onclick = () =>{
+        measureActive = !measureActive;
+        viewer.dimensions.active = measureActive;
+        viewer.dimensions.previewActive = measureActive;
+    };
+
+    window.ondblclick = () => {
+        viewer.IFC.selector.pickIfcItem();
+        if(clippingPlanesActive){
+            viewer.clipper.createPlane();
+        }
+        if(measureActive){
+            viewer.dimensions.create();
+        }
+    };
+
+    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
+
+    window.onkeydown = (event) => {
+        if(event.code === 'Delete' && clippingPlanesActive) {
+            viewer.clipper.deleteAllPlanes();
+        }
+        if(event.code === 'Delete' && measureActive) {
+            viewer.dimensions.delete();
+        }
+    };
 }
 
 loadIfc("../../../wasm/01.ifc");
@@ -114860,7 +114889,6 @@ async function drawProjectedItems(storey, plan, modelID) {
 
     // Clean up
     edges.geometry.dispose();
-
 
     // Draw all sectioned items
     viewer.dxf.drawNamedLayer(plan.name, plan, 'thick', 'Section', Drawing.ACI.RED, 'CONTINUOUS');

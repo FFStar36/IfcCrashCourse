@@ -1,7 +1,12 @@
 
-Es fehlt einen Tree mit anklicken zu machen.
-Dann:
-floorplans,
-schneiden,
-messen,
+Informationen:
+Eigenschaften anzeigen (Höhe, Breite etc.)
+Visability: Also Wände, Decken, IDs ausblenden können
 
+Anzeigen der Eigenschaften?
+Ausblenden von Layers oder Materialien?
+
+Errors:
+Schnitt und Messung gleichzeitig sind error
+Messungspunkt ist ungleich der gezielten stelle
+In der Floorplanansicht die Decken wegbnehmen
