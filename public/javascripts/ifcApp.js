@@ -1,6 +1,16 @@
 import { Color, LineBasicMaterial, MeshBasicMaterial } from '../../node_modules/three';
 import { IfcViewerAPI } from '../../node_modules/web-ifc-viewer';
-import Drawing from '../../node_modules/dxf-writer';
+import Drawing from '../../node_modules/dxf-writer'
+
+import {
+    IFCWALLSTANDARDCASE,
+    IFCSLAB,
+    IFCDOOR,
+    IFCWINDOW,
+    IFCFURNISHINGELEMENT,
+    IFCMEMBER,
+    IFCWALL
+} from '../../node_modules/web-ifc';
 
 const container = document.getElementById('viewer-container');
 const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
@@ -92,7 +102,7 @@ async function loadIfc(url) {
     }
 
     ////////////////// Events/ Buttons
-    // Schnitte
+    ///////// Schnitte
     let clippingPlanesActive = false
     const clipperButton = document.querySelector("#clipperButton")
 
@@ -101,7 +111,7 @@ async function loadIfc(url) {
         viewer.clipper.active = clippingPlanesActive
     }
 
-    //Messungen
+    ///////// Messungen
     let measureActive = false
     const measureButton = document.querySelector("#measureButton")
 
@@ -111,6 +121,9 @@ async function loadIfc(url) {
         viewer.dimensions.previewActive = measureActive;
     }
 
+    ///////// Tree
+    // model.removeFromParent();
+    // await setupAllCategories();
     window.ondblclick = () => {
         viewer.IFC.selector.pickIfcItem();
         if(clippingPlanesActive){
@@ -131,10 +144,191 @@ async function loadIfc(url) {
             viewer.dimensions.delete();
         }
     }
+
+    // spetial Tree
+    const project = await viewer.IFC.getSpatialStructure(model.modelID)
+    createTreeMenu(project)
+
+    // downloading Properties:
+
 }
 
-loadIfc("../../../wasm/01.ifc");
+loadIfc("../../../wasm/02.ifc");
+const scene = viewer.context.getScene();
 
+// Tree view
+const toggler = document.getElementsByClassName("caret");
+for (let i = 0; i < toggler.length; i++) {
+    toggler[i].onclick = () => {
+        toggler[i].parentElement.querySelector(".nested").classList.toggle("active");
+        toggler[i].classList.toggle("caret-down");
+    }
+}
+
+function createTreeMenu(ifcProject) {
+    const root = document.getElementById("tree-root");
+    removeAllChildren(root);
+    const ifcProjectNode = createNestedChild(root, ifcProject);
+    ifcProject.children.forEach(child => {
+        constructTreeMenuNode(ifcProjectNode, child);
+    })
+}
+
+function nodeToString(node) {
+    console.log(node)
+    return `${node.type} - ${node.expressID}`
+}
+
+function constructTreeMenuNode(parent, node) {
+    const children = node.children;
+    if (children.length === 0) {
+        createSimpleChild(parent, node);
+        return;
+    }
+    const nodeElement = createNestedChild(parent, node);
+    children.forEach(child => {
+        constructTreeMenuNode(nodeElement, child);
+    })
+}
+
+function createNestedChild(parent, node) {
+    const content = nodeToString(node);
+    const root = document.createElement('li');
+    createTitle(root, content);
+    const childrenContainer = document.createElement('ul');
+    childrenContainer.classList.add("nested");
+    root.appendChild(childrenContainer);
+    parent.appendChild(root);
+    return childrenContainer;
+}
+
+function createTitle(parent, content) {
+    const title = document.createElement("span");
+    title.classList.add("caret");
+    title.onclick = () => {
+        title.parentElement.querySelector(".nested").classList.toggle("active");
+        title.classList.toggle("caret-down");
+    }
+    title.textContent = content;
+    parent.appendChild(title);
+}
+
+function createSimpleChild(parent, node) {
+    const content = nodeToString(node);
+    const childNode = document.createElement('li');
+    childNode.classList.add('leaf-node');
+    childNode.textContent = content;
+    parent.appendChild(childNode);
+
+    childNode.onmouseenter = () => {
+        viewer.IFC.selector.prepickIfcItemsByID(0, [node.expressID]);
+    }
+
+    childNode.onclick = async () => {
+        viewer.IFC.selector.pickIfcItemsByID(0, [node.expressID]);
+    }
+}
+
+function removeAllChildren(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+}
+
+// jetzt muessen die Typen gesammelt werden!
+
+
+
+// List of categories names
+
+// ifcProject.children.forEach(child => {
+//     let node = child
+//     const children = node.children;
+//
+// })
+//
+// function constructTreeMenuNode(parent, node) {
+//     const children = node.children;
+//     if (children.length === 0) {
+//         console.log(`${node.type} - ${node.expressID}`)
+//         return;
+//     }
+//     const nodeElement = createNestedChild(parent, node);
+//     children.forEach(child => {
+//         constructTreeMenuNode(nodeElement, child);
+//     })
+// }
+
+
+
+
+// const categories = {
+//     IFCWALLSTANDARDCASE,
+//     IFCSLAB,
+//     IFCFURNISHINGELEMENT,
+//     IFCDOOR,
+//     IFCWINDOW,
+//     IFCPLATE,
+//     IFCMEMBER,
+//     IFCWALL
+// };
+//
+//
+// // Gets the name of a category
+// function getName(category) {
+//     const names = Object.keys(categories);
+//     return names.find(name => categories[name] === category);
+// }
+//
+// // Gets all the items of a category
+// async function getAll(category) {
+//     return viewer.IFC.loader.ifcManager.getAllItemsOfType(0, category, false);
+// }
+//
+//
+//
+// // Creates a new subset containing all elements of a category
+// async function newSubsetOfType(category) {
+//     const ids = await getAll(category);
+//     return viewer.IFC.loader.ifcManager.createSubset({
+//         modelID: 0,
+//         scene,
+//         ids,
+//         removePrevious: true,
+//         customID: category.toString(),
+//     });
+// }
+//
+// // Stores the created subsets
+// const subsets = {};
+//
+// async function setupAllCategories() {
+//     const allCategories = Object.values(categories);
+//     for (let i = 0; i < allCategories.length; i++) {
+//         const category = allCategories[i];
+//         await setupCategory(category);
+//     }
+//     // hier schauen, dass alle Elemente drin sind
+//
+// }
+//
+// // Creates a new subset and configures the checkbox
+// async function setupCategory(category) {
+//     subsets[category] = await newSubsetOfType(category);
+//     setupCheckBox(category);
+// }
+//
+// // Sets up the checkbox event to hide / show elements
+// function setupCheckBox(category) {
+//     const name = getName(category);
+//     const checkBox = document.getElementById(name);
+//     checkBox.addEventListener('change', (event) => {
+//         const checked = event.target.checked;
+//         const subset = subsets[category];
+//         if (checked) scene.add(subset);
+//         else subset.removeFromParent();
+//     });
+// }
 
 const dummySubsetMat = new MeshBasicMaterial({visible: false});
 

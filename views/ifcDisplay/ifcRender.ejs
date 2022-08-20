@@ -1,5 +1,67 @@
 <div id="viewer-container"></div>
 <div id="button-container"></div>
-<script type="module" src="/javascripts/bundle.js"></script>
 <button id ="clipperButton">Schneiden</button>
 <button id ="measureButton">Messen</button>
+<div class="ifc-tree-menu">
+    <ul id="myUL">
+        <li id="tree-root">
+            <span class="caret">Beverages</span>
+            <ul class="nested">
+                <li>Water</li>
+                <li>Coffee</li>
+                <li>
+                    <span class="caret">Tea</span>
+                    <ul class="nested">
+                        <li>Black Tea</li>
+                        <li>White Tea</li>
+                        <li><span class="caret">Green Tea</span>
+                            <ul class="nested">
+                                <li>Sencha</li>
+                                <li>Gyokuro</li>
+                                <li>Matcha</li>
+                                <li>Pi Lo Chun</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+
+<!--<div class="checkboxes">-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCWALLSTANDARDCASE" type="checkbox">-->
+<!--        Walls-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCSLAB" type="checkbox">-->
+<!--        Slabs-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCWINDOW" type="checkbox">-->
+<!--        Windows-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCFURNISHINGELEMENT" type="checkbox">-->
+<!--        Furniture-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCDOOR" type="checkbox">-->
+<!--        Doors-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCMEMBER" type="checkbox">-->
+<!--        Curtain wall structure-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCPLATE" type="checkbox">-->
+<!--        Curtain wall plates-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <input checked="true" id="IFCWALL" type="checkbox">-->
+<!--        Rest-->
+<!--    </div>-->
+<!--</div>-->
+<script type="module" src="/javascripts/bundle.js"></script>
