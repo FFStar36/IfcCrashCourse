@@ -2,16 +2,6 @@ import { Color, LineBasicMaterial, MeshBasicMaterial } from '../../node_modules/
 import { IfcViewerAPI } from '../../node_modules/web-ifc-viewer';
 import Drawing from '../../node_modules/dxf-writer'
 
-import {
-    IFCWALLSTANDARDCASE,
-    IFCSLAB,
-    IFCDOOR,
-    IFCWINDOW,
-    IFCFURNISHINGELEMENT,
-    IFCMEMBER,
-    IFCWALL
-} from '../../node_modules/web-ifc';
-
 const container = document.getElementById('viewer-container');
 const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
 
@@ -26,12 +16,7 @@ async function loadIfc(url) {
     // await viewer.shadowDropper.renderShadow(model.modelID);
     // viewer.context.renderer.postProduction.active = true;
 
-    // Hier den Progress drucken, aber dauert zu lange
-    // const result = await viewer.IFC.properties.serializeAllProperties(model, undeined, (current, total) => {
-    //     const progress = current / total;
-    //     const formatted = Math.trunc(progress * 100);
-    //     console.log(formatted + '%');
-    // });
+
 
     // Setup camera controls
     const controls = viewer.context.ifcCamera.cameraControls;
@@ -55,8 +40,6 @@ async function loadIfc(url) {
 
     for (const plan of allPlans) {
         const currentPlan = viewer.plans.planLists[model.modelID][plan];
-        console.log(currentPlan);
-
         const button = document.createElement('button');
         container.appendChild(button);
         button.textContent = currentPlan.name;
@@ -75,7 +58,6 @@ async function loadIfc(url) {
     };
 
     // Floor plan export
-
     viewer.dxf.initializeJSDXF(Drawing);
 
     const ifcProject = await viewer.IFC.getSpatialStructure(model.modelID);
@@ -121,10 +103,18 @@ async function loadIfc(url) {
         viewer.dimensions.previewActive = measureActive;
     }
 
-    ///////// Tree
-    // model.removeFromParent();
-    // await setupAllCategories();
-    window.ondblclick = () => {
+    // visibility
+    model.removeFromParent();
+
+    window.ondblclick = async () => {
+
+        // Props
+        const result = await viewer.IFC.selector.highlightIfcItem();
+        if (!result) return;
+        const { modelID, id } = result;
+        const props = await viewer.IFC.getProperties(modelID, id, true, false);
+        showProps(props)
+
         viewer.IFC.selector.pickIfcItem();
         if(clippingPlanesActive){
             viewer.clipper.createPlane()
@@ -147,14 +137,23 @@ async function loadIfc(url) {
 
     // spetial Tree
     const project = await viewer.IFC.getSpatialStructure(model.modelID)
-    createTreeMenu(project)
-
-    // downloading Properties:
-
+    await createTreeMenu(project)
 }
 
-loadIfc("../../../wasm/02.ifc");
+loadIfc("../../../wasm/01.ifc");
+
 const scene = viewer.context.getScene();
+let ifcBuildingStoryID
+
+// Props
+function showProps(properties){
+
+    delete properties.mats;
+    delete properties.type;
+    console.log(properties)
+}
+
+
 
 // Tree view
 const toggler = document.getElementsByClassName("caret");
@@ -165,24 +164,54 @@ for (let i = 0; i < toggler.length; i++) {
     }
 }
 
-function createTreeMenu(ifcProject) {
+let elementsInBuildingStorey = {}
+
+async function createTreeMenu(ifcProject) {
     const root = document.getElementById("tree-root");
     removeAllChildren(root);
+    let itemsProcessed = 0
     const ifcProjectNode = createNestedChild(root, ifcProject);
-    ifcProject.children.forEach(child => {
+    ifcProject.children.forEach((child, index, array) => {
         constructTreeMenuNode(ifcProjectNode, child);
+        itemsProcessed++
+        if(itemsProcessed === array.length){
+            setupAllStories(elementsInBuildingStorey)
+                .then(() =>{
+                    const togglerElements = document.getElementsByClassName("caret");
+                    for (let i = 0; i < togglerElements.length; i++) {
+                        togglerElements[i].onclick = () => {
+                            togglerElements[i].parentElement.querySelector(".nested").classList.toggle("active");
+                            togglerElements[i].classList.toggle("caret-down");
+                        }
+                    }
+                })
+        }
     })
 }
 
+
+
 function nodeToString(node) {
-    console.log(node)
     return `${node.type} - ${node.expressID}`
+}
+
+function addNodeArray(node){
+    let ifcType =  node.type.toString()
+    if(Object.keys(elementsInBuildingStorey).length === 0 || elementsInBuildingStorey[ifcBuildingStoryID] === undefined){
+        elementsInBuildingStorey[ifcBuildingStoryID] ={}
+    }
+    let obj = elementsInBuildingStorey[ifcBuildingStoryID]
+    if(obj[ifcType] !== undefined){
+        obj[ifcType].push(node.expressID)
+    }else{
+        obj[ifcType] = [node.expressID]
+    }
 }
 
 function constructTreeMenuNode(parent, node) {
     const children = node.children;
     if (children.length === 0) {
-        createSimpleChild(parent, node);
+        createSimpleChild(parent, node, children);
         return;
     }
     const nodeElement = createNestedChild(parent, node);
@@ -193,6 +222,9 @@ function constructTreeMenuNode(parent, node) {
 
 function createNestedChild(parent, node) {
     const content = nodeToString(node);
+    if(content.includes("IFCBUILDINGSTOREY")) {
+        ifcBuildingStoryID = node.expressID
+    }
     const root = document.createElement('li');
     createTitle(root, content);
     const childrenContainer = document.createElement('ul');
@@ -213,12 +245,14 @@ function createTitle(parent, content) {
     parent.appendChild(title);
 }
 
-function createSimpleChild(parent, node) {
+function createSimpleChild(parent, node, children) {
     const content = nodeToString(node);
     const childNode = document.createElement('li');
     childNode.classList.add('leaf-node');
     childNode.textContent = content;
     parent.appendChild(childNode);
+
+    addNodeArray(node)
 
     childNode.onmouseenter = () => {
         viewer.IFC.selector.prepickIfcItemsByID(0, [node.expressID]);
@@ -235,100 +269,114 @@ function removeAllChildren(element) {
     }
 }
 
-// jetzt muessen die Typen gesammelt werden!
+// Visibility
+async function setupAllStories() {
+    const allStorieKeys = Object.keys(elementsInBuildingStorey);
+    for(let storieName of allStorieKeys) {
+        const storeyIfcElements = elementsInBuildingStorey[storieName]
+        await setupStorey(storieName, storeyIfcElements);
+    }
+}
+
+async function setupStorey(storieName, storeyIfcElements){
+    const allIfcElementNames = Object.keys(storeyIfcElements);
+    for(let ifcElementName of allIfcElementNames) {
+        const elementIDs = storeyIfcElements[ifcElementName]
+        await setupCategory(storieName, ifcElementName, elementIDs);
+    }
+}
+
+// Stores the created subsets
+const subsets = {};
+async function setupCategory(storieName, ifcElementName, elementIDs){
+    let customID = createCustomID(storieName, ifcElementName)
+    subsets[customID] = await newSubsetOfElements(customID, elementIDs)
+    createStories(storieName)
+    setupCheckBox(storieName, ifcElementName)
+}
+
+async function setupCheckBox(storieName, ifcElementName){
+    createCheckBox(storieName, ifcElementName)
+    let customID = createCustomID(storieName, ifcElementName)
+    let checkBox = document.getElementById(customID)
+
+    checkBox.addEventListener('change', (event) => {
+        const checked = event.target.checked;
+        const subset = subsets[customID];
+        if (checked) scene.add(subset);
+        else subset.removeFromParent();
+    });
+}
+
+async function createStories(storieName){
+    let storeyID = storieName
+
+    let division = document.getElementById(storieName)
+    if(division === null){
+        let divElements = document.getElementById("ifcStorey")
+
+        let newLi = document.createElement('li');
+        divElements.appendChild(newLi)
+
+        let span = document.createElement('span');
+
+
+        viewer.IFC.getProperties(0,  parseInt(storeyID), true, false).then(function(value){
+            span.innerHTML = value.Name.value
+        })
+
+        span.className = "caret"
+        newLi.appendChild(span);
+
+        let newUl = document.createElement('ul');
+        newUl.className = "nested"
+        newLi.appendChild(newUl)
+
+        let newDiv = document.createElement('div');
+        newDiv.id = storieName
+        newUl.appendChild(newDiv)
+    }
+}
+
+function createCheckBox(storieName, ifcElementName){
+    let division = document.getElementById(storieName)
+    let newLi = document.createElement('li');
+
+    division.appendChild(newLi);
+    let checkBox = document.createElement('input');
+    checkBox.type = "checkbox";
+    checkBox.id = createCustomID(storieName, ifcElementName)
+    checkBox.className = "ifcElement"
+    checkBox.checked = true
+    newLi.appendChild(checkBox);
+
+    let label = document.createElement('label')
+    label.htmlFor = createCustomID(storieName, ifcElementName);
+    label.appendChild(document.createTextNode(` ${ifcElementName}`));
+    newLi.appendChild(label);
+
+    let p = document.createElement("p");
+    newLi.appendChild(p);
+}
+
+function createCustomID(storieName, ifcElementName){
+    let customID = `${storieName}_${ifcElementName}`
+    return customID
+}
+
+// Creates a new subset containing all elements of a category
+async function newSubsetOfElements(customID, elementIDs) {
+    return viewer.IFC.loader.ifcManager.createSubset({
+        modelID: 0,
+        scene,
+        ids: elementIDs,
+        removePrevious: true,
+        customID,
+    });
+}
 
 
 
-// List of categories names
-
-// ifcProject.children.forEach(child => {
-//     let node = child
-//     const children = node.children;
-//
-// })
-//
-// function constructTreeMenuNode(parent, node) {
-//     const children = node.children;
-//     if (children.length === 0) {
-//         console.log(`${node.type} - ${node.expressID}`)
-//         return;
-//     }
-//     const nodeElement = createNestedChild(parent, node);
-//     children.forEach(child => {
-//         constructTreeMenuNode(nodeElement, child);
-//     })
-// }
-
-
-
-
-// const categories = {
-//     IFCWALLSTANDARDCASE,
-//     IFCSLAB,
-//     IFCFURNISHINGELEMENT,
-//     IFCDOOR,
-//     IFCWINDOW,
-//     IFCPLATE,
-//     IFCMEMBER,
-//     IFCWALL
-// };
-//
-//
-// // Gets the name of a category
-// function getName(category) {
-//     const names = Object.keys(categories);
-//     return names.find(name => categories[name] === category);
-// }
-//
-// // Gets all the items of a category
-// async function getAll(category) {
-//     return viewer.IFC.loader.ifcManager.getAllItemsOfType(0, category, false);
-// }
-//
-//
-//
-// // Creates a new subset containing all elements of a category
-// async function newSubsetOfType(category) {
-//     const ids = await getAll(category);
-//     return viewer.IFC.loader.ifcManager.createSubset({
-//         modelID: 0,
-//         scene,
-//         ids,
-//         removePrevious: true,
-//         customID: category.toString(),
-//     });
-// }
-//
-// // Stores the created subsets
-// const subsets = {};
-//
-// async function setupAllCategories() {
-//     const allCategories = Object.values(categories);
-//     for (let i = 0; i < allCategories.length; i++) {
-//         const category = allCategories[i];
-//         await setupCategory(category);
-//     }
-//     // hier schauen, dass alle Elemente drin sind
-//
-// }
-//
-// // Creates a new subset and configures the checkbox
-// async function setupCategory(category) {
-//     subsets[category] = await newSubsetOfType(category);
-//     setupCheckBox(category);
-// }
-//
-// // Sets up the checkbox event to hide / show elements
-// function setupCheckBox(category) {
-//     const name = getName(category);
-//     const checkBox = document.getElementById(name);
-//     checkBox.addEventListener('change', (event) => {
-//         const checked = event.target.checked;
-//         const subset = subsets[category];
-//         if (checked) scene.add(subset);
-//         else subset.removeFromParent();
-//     });
-// }
 
 const dummySubsetMat = new MeshBasicMaterial({visible: false});
 

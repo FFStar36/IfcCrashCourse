@@ -1,15 +1,8 @@
-
 Informationen:
-Eigenschaften anzeigen (Höhe, Breite etc.)
-Visability: Also Wände, Decken, IDs ausblenden können
-
-Anzeigen der Eigenschaften?
-Ausblenden von Layers oder Materialien?
-aus dbl click wird einzelner im viewerBereich bei Schnitt und Messung
-
-Nur die aus dem Modell, die auch weggenommen werden können
+- Eigenschaften anzeigen (Höhe, Breite etc.)
+- aus dbl click wird einzelner im viewerBereich bei Schnitt und Messung
+- Shadowing und nacheffekt als Option
 
 Errors:
 Schnitt und Messung gleichzeitig sind error
-Messungspunkt ist ungleich der gezielten stelle
 In der Floorplanansicht die Decken wegbnehmen
