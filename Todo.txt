@@ -6,3 +6,5 @@ Informationen:
 Errors:
 Schnitt und Messung gleichzeitig sind error
 In der Floorplanansicht die Decken wegbnehmen
+3D View ist nicht gechecked beim View
+bei Esc sollte auf 3D-View ausgewaehlt werden

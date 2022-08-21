@@ -114925,7 +114925,9 @@ var Drawing_1 = Drawing$1;
 
 var Drawing = /*@__PURE__*/getDefaultExportFromCjs(dxfWriter.exports);
 
-async function exportFloorPlans(container, viewer, model) {
+async function exportFloorPlans(viewer, model) {
+
+    const container = document.getElementById('button-container');
 
     // Generate all plans
     await viewer.plans.computeAllPlanViews(model.modelID);
@@ -115033,36 +115035,66 @@ async function showFloorPlans(viewer, model){
     });
     await viewer.edges.create('example', model.modelID, lineMaterial, baseMaterial);
 
-
     // Floor plan viewing
     const allPlans = viewer.plans.getAll(model.modelID);
+    const container = document.getElementById('planViews');
 
-    const container = document.getElementById('button-container');
-
-    for (const plan of allPlans) {
-        const currentPlan = viewer.plans.planLists[model.modelID][plan];
-        const button = document.createElement('button');
-        container.appendChild(button);
-        button.textContent = currentPlan.name;
-        button.onclick = () => {
-            viewer.plans.goTo(model.modelID, plan);
-            viewer.edges.toggle('example', true);
-        };
+    // create Exit
+    const label = document.createElement('label');
+    label.className = "btn btn-secondary active";
+    label.textContent = "3D-View";
+    container.appendChild(label);
+    function createExit(myCallback) {
+        let input = document.createElement("input");
+        input.type = "radio";
+        input.name = "options";
+        input.autocomplete = "off";
+        input.id = "3DView";
+        label.appendChild(input);
+        myCallback(label);
     }
 
-    const button = document.createElement('button');
-    container.appendChild(button);
-    button.textContent = 'Exit';
-    button.onclick = () => {
-        viewer.plans.exitPlanView();
-        viewer.edges.toggle('example', false);
-    };
+    function addEvent(input) {
+        input.addEventListener('click', function () {
+            viewer.plans.exitPlanView();
+            viewer.edges.toggle('example', false);
+        });
+    }
+    createExit(addEvent);
+
+    // create Plans
+    for (const plan of allPlans) {
+        const currentPlan = viewer.plans.planLists[model.modelID][plan];
+        const label = document.createElement('label');
+        label.className = "btn btn-secondary";
+        label.textContent = currentPlan.name;
+        container.appendChild(label);
+
+        function createInput(myCallback) {
+            let input = document.createElement("input");
+            input.type = "radio";
+            input.name = "options";
+            input.autocomplete = "off";
+
+            input.id = currentPlan.name;
+            label.appendChild(input);
+            myCallback(label);
+        }
+
+        function addEvent(input) {
+            input.addEventListener('click', function () {
+                viewer.plans.goTo(model.modelID, plan);
+                viewer.edges.toggle('example', true);
+            });
+        }
+        createInput(addEvent);
+    }
 }
 
 async function loadIfc(url) {
 
     const container = document.getElementById('viewer-container');
-    const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
+    const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xf8f9fa) });
     await viewer.IFC.setWasmPath("../../../wasm/");
 
     const model = await viewer.IFC.loadIfcUrl(url, true);
@@ -115073,7 +115105,7 @@ async function loadIfc(url) {
 
     // FloorPlans
     await showFloorPlans(viewer, model);
-    await exportFloorPlans(container, viewer, model);
+    await exportFloorPlans(viewer, model);
 
     // Planes
     let clippingPlanesActive = false;

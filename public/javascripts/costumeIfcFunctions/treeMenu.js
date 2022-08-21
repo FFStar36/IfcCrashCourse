@@ -1,5 +1,9 @@
 
-export async function createTreeMenu(ifcProject, viewer, scene) {
+export async function createTreeMenu(viewer, model) {
+
+    model.removeFromParent();
+    const scene = viewer.context.getScene();
+    const ifcProject = await viewer.IFC.getSpatialStructure(model.modelID)
 
     let ifcBuildingStoryID
     let elementsInBuildingStorey = {}
@@ -201,7 +205,7 @@ export async function createTreeMenu(ifcProject, viewer, scene) {
         return customID
     }
 
-// Creates a new subset containing all elements of a category
+    // Creates a new subset containing all elements of a category
     async function newSubsetOfElements(customID, elementIDs) {
         return viewer.IFC.loader.ifcManager.createSubset({
             modelID: 0,

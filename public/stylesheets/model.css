@@ -1,3 +1,6 @@
+/*.btn-secondary{*/
+/*    background-color: lightgray !important;*/
+/*}*/
 *{
     margin: 0;
     padding: 0;
@@ -82,12 +85,6 @@ ul, #myUL {
 }
 
 #viewer-container{
-    height: 60%;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    margin-top: 10%;
-    left: 40vw;
-    outline: none;
-
+    height: 95%;
+    width: 90%;
 }

@@ -1,21 +1,54 @@
-<div id="viewer-container"></div>
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-sm">
+            <div class="card" style="width: 100vw; height:70vh">
+                <div class="card-body">
+                    <h5 class="card-title">Model title</h5>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-2">
+                                <div class="card-body">
+                                    <div class="ifc-tree-menu">
+                                        <ul id="myUL">
+                                            <li id="tree-root">
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="ifcStorey">
+                                        <ul id="myUL">
+                                            <div id="ifcStorey">
+                                            </div>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-10">
+                                <div class="row justify-content-center">
+                                    <div class="btn-group btn-group-toggle" id = "planViews" data-toggle="buttons" style="position: absolute; margin-top: 2%"></div>
+                                </div>
+
+                                <div id="viewer-container" style="width: 100vw; height:65vh"></div>
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+
+
 <div id="button-container"></div>
+
+
+
 <button id ="clipperButton">Schneiden</button>
 <button id ="measureButton">Messen</button>
 
-<div class="ifc-tree-menu">
-    <ul id="myUL">
-        <li id="tree-root">
-        </li>
-    </ul>
-</div>
 
-<div class="ifcStorey">
-        <ul id="myUL">
-            <div id="ifcStorey">
-            </div>
-        </ul>
-</div>
 
 <div id = info>
     <table name="pickedInfo">
