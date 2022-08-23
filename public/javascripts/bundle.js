@@ -113336,9 +113336,6 @@ async function createTreeMenu(viewer, model) {
         label.htmlFor = createCustomID(storieName, ifcElementName);
         label.appendChild(document.createTextNode(` ${ifcElementName}`));
         newLi.appendChild(label);
-
-        let p = document.createElement("p");
-        newLi.appendChild(p);
     }
 
     function createCustomID(storieName, ifcElementName) {
@@ -114927,8 +114924,6 @@ var Drawing = /*@__PURE__*/getDefaultExportFromCjs(dxfWriter.exports);
 
 async function exportFloorPlans(viewer, model) {
 
-    const container = document.getElementById('button-container');
-
     // Generate all plans
     await viewer.plans.computeAllPlanViews(model.modelID);
 
@@ -114950,14 +114945,20 @@ async function exportFloorPlans(viewer, model) {
     for (const plan of allPlans) {
         const currentPlan = viewer.plans.planLists[model.modelID][plan];
 
+        const container = document.getElementById('pdfExportButton');
         const button = document.createElement('button');
         container.appendChild(button);
-        button.textContent = 'Export ' + currentPlan.name;
+        // button.textContent = 'Export ' + currentPlan.name;
+        button.id = 'Export ' + currentPlan.name;
+        button.className = 'ExportPlans';
         button.onclick = () => {
             const storey = storeys.find(storey => storey.expressID === currentPlan.expressID);
             drawProjectedItems(storey, currentPlan, model.modelID, viewer);
         };
     }
+
+    // First toggleOfBtn
+    toggleOffExportPlanBtn();
 }
 
 async function drawProjectedItems(storey, plan, modelID, viewer){
@@ -115020,6 +115021,23 @@ async function drawProjectedItems(storey, plan, modelID, viewer){
     document.body.appendChild(link);
     link.click();
     link.remove();
+
+}
+
+function toggleOffExportPlanBtn(exception = null){
+    let exportButtons = document.getElementsByClassName('ExportPlans');
+    for(let btn of exportButtons){
+        if(btn.id !== exception) {
+            btn.style.display = "none";
+        }
+    }
+}
+
+function toggleOnExportPlanBtn(planName){
+    let buttonID = 'Export ' + planName;
+    let btn = document.getElementById(buttonID);
+    btn.style.display = "inline";
+    toggleOffExportPlanBtn(buttonID);
 }
 
 async function showFloorPlans(viewer, model){
@@ -115058,6 +115076,7 @@ async function showFloorPlans(viewer, model){
         input.addEventListener('click', function () {
             viewer.plans.exitPlanView();
             viewer.edges.toggle('example', false);
+            toggleOffExportPlanBtn();
         });
     }
     createExit(addEvent);
@@ -115085,6 +115104,9 @@ async function showFloorPlans(viewer, model){
             input.addEventListener('click', function () {
                 viewer.plans.goTo(model.modelID, plan);
                 viewer.edges.toggle('example', true);
+
+                // Export PlanBtns
+                toggleOnExportPlanBtn(currentPlan.name);
             });
         }
         createInput(addEvent);
@@ -115097,6 +115119,7 @@ async function loadIfc(url) {
     const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xf8f9fa) });
     await viewer.IFC.setWasmPath("../../../wasm/");
 
+
     const model = await viewer.IFC.loadIfcUrl(url, true);
 
     // Add dropped shadow and post-processing effect
@@ -115104,16 +115127,23 @@ async function loadIfc(url) {
     // viewer.context.renderer.postProduction.active = true;
 
     // FloorPlans
-    await showFloorPlans(viewer, model);
     await exportFloorPlans(viewer, model);
+    await showFloorPlans(viewer, model);
 
     // Planes
     let clippingPlanesActive = false;
-    const clipperButton = document.querySelector("#clipperButton");
+    const clipperButton = document.getElementById("clipperButton");
 
     clipperButton.onclick = () =>{
         clippingPlanesActive = !clippingPlanesActive;
         viewer.clipper.active = clippingPlanesActive;
+        if(clippingPlanesActive) {
+            clipperButton.style.backgroundColor = "#f44336";
+            clipperButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)";
+        }else {
+            clipperButton.style.backgroundColor = null;
+            clipperButton.style.boxShadow = null;
+        }
     };
 
     // Measure
@@ -115124,10 +115154,19 @@ async function loadIfc(url) {
         measureActive = !measureActive;
         viewer.dimensions.active = measureActive;
         viewer.dimensions.previewActive = measureActive;
+
+        if(measureActive) {
+            measureButton.style.backgroundColor = "#f44336";
+            measureButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)";
+        }else {
+            measureButton.style.backgroundColor = null;
+            measureButton.style.boxShadow = null;
+        }
     };
 
     // createTree
     await createTreeMenu(viewer, model);
+
 
     // WindowEvents
     window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
@@ -115159,7 +115198,11 @@ async function loadIfc(url) {
     };
 }
 
-loadIfc("../../../wasm/01.ifc");
+await loadIfc("../../../wasm/05.ifc")
+    .then(() =>{
+        let loadingContainer = document.getElementById("loading");
+        loadingContainer.style.display = "none";
+    });
 
 // Props
 function showProps(properties){

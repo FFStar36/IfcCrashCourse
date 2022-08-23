@@ -195,9 +195,6 @@ export async function createTreeMenu(viewer, model) {
         label.htmlFor = createCustomID(storieName, ifcElementName);
         label.appendChild(document.createTextNode(` ${ifcElementName}`));
         newLi.appendChild(label);
-
-        let p = document.createElement("p");
-        newLi.appendChild(p);
     }
 
     function createCustomID(storieName, ifcElementName) {

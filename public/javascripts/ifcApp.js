@@ -11,23 +11,31 @@ async function loadIfc(url) {
     const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xf8f9fa) });
     await viewer.IFC.setWasmPath("../../../wasm/");
 
-    const model = await viewer.IFC.loadIfcUrl(url, true);
+
+    const model = await viewer.IFC.loadIfcUrl(url, true)
 
     // Add dropped shadow and post-processing effect
     // await viewer.shadowDropper.renderShadow(model.modelID);
     // viewer.context.renderer.postProduction.active = true;
 
     // FloorPlans
-    await showFloorPlans(viewer, model)
     await exportFloorPlans(viewer, model)
+    await showFloorPlans(viewer, model)
 
     // Planes
     let clippingPlanesActive = false
-    const clipperButton = document.querySelector("#clipperButton")
+    const clipperButton = document.getElementById("clipperButton")
 
     clipperButton.onclick = () =>{
         clippingPlanesActive = !clippingPlanesActive
         viewer.clipper.active = clippingPlanesActive
+        if(clippingPlanesActive) {
+            clipperButton.style.backgroundColor = "#f44336"
+            clipperButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)"
+        }else{
+            clipperButton.style.backgroundColor = null
+            clipperButton.style.boxShadow = null
+        }
     }
 
     // Measure
@@ -38,10 +46,19 @@ async function loadIfc(url) {
         measureActive = !measureActive
         viewer.dimensions.active = measureActive;
         viewer.dimensions.previewActive = measureActive;
+
+        if(measureActive) {
+            measureButton.style.backgroundColor = "#f44336"
+            measureButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)"
+        }else{
+            measureButton.style.backgroundColor = null
+            measureButton.style.boxShadow = null
+        }
     }
 
     // createTree
     await createTreeMenu(viewer, model)
+
 
     // WindowEvents
     window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
@@ -73,7 +90,11 @@ async function loadIfc(url) {
     }
 }
 
-loadIfc("../../../wasm/01.ifc");
+await loadIfc("../../../wasm/05.ifc")
+    .then(() =>{
+        let loadingContainer = document.getElementById("loading")
+        loadingContainer.style.display = "none"
+    })
 
 // Props
 function showProps(properties){
@@ -81,4 +102,3 @@ function showProps(properties){
     delete properties.type;
     console.log(properties)
 }
-

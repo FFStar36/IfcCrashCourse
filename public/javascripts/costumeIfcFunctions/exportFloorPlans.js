@@ -3,8 +3,6 @@ import Drawing from '../../../node_modules/dxf-writer';
 
 export async function exportFloorPlans(viewer, model) {
 
-    const container = document.getElementById('button-container');
-
     // Generate all plans
     await viewer.plans.computeAllPlanViews(model.modelID);
 
@@ -26,17 +24,23 @@ export async function exportFloorPlans(viewer, model) {
     for (const plan of allPlans) {
         const currentPlan = viewer.plans.planLists[model.modelID][plan];
 
+        const container = document.getElementById('pdfExportButton');
         const button = document.createElement('button');
         container.appendChild(button);
-        button.textContent = 'Export ' + currentPlan.name;
+        // button.textContent = 'Export ' + currentPlan.name;
+        button.id = 'Export ' + currentPlan.name;
+        button.className = 'ExportPlans'
         button.onclick = () => {
             const storey = storeys.find(storey => storey.expressID === currentPlan.expressID);
             drawProjectedItems(storey, currentPlan, model.modelID, viewer);
         };
     }
+
+    // First toggleOfBtn
+    toggleOffExportPlanBtn()
 }
 
-async function drawProjectedItems(storey, plan, modelID, viewer){
+export async function drawProjectedItems(storey, plan, modelID, viewer){
 
     const dummySubsetMat = new MeshBasicMaterial({visible: false});
 
@@ -96,4 +100,21 @@ async function drawProjectedItems(storey, plan, modelID, viewer){
     document.body.appendChild(link);
     link.click();
     link.remove();
+
+}
+
+export function toggleOffExportPlanBtn(exception = null){
+    let exportButtons = document.getElementsByClassName('ExportPlans')
+    for(let btn of exportButtons){
+        if(btn.id !== exception) {
+            btn.style.display = "none"
+        }
+    }
+}
+
+export function toggleOnExportPlanBtn(planName){
+    let buttonID = 'Export ' + planName;
+    let btn = document.getElementById(buttonID)
+    btn.style.display = "inline"
+    toggleOffExportPlanBtn(buttonID)
 }

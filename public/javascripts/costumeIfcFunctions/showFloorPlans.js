@@ -1,4 +1,5 @@
 import {LineBasicMaterial, MeshBasicMaterial} from "../../../node_modules/three";
+import {toggleOffExportPlanBtn, toggleOnExportPlanBtn} from "./exportFloorPlans";
 
 export async function showFloorPlans(viewer, model){
 
@@ -36,6 +37,7 @@ export async function showFloorPlans(viewer, model){
         input.addEventListener('click', function () {
             viewer.plans.exitPlanView();
             viewer.edges.toggle('example', false);
+            toggleOffExportPlanBtn()
         })
     }
     createExit(addEvent)
@@ -63,6 +65,9 @@ export async function showFloorPlans(viewer, model){
             input.addEventListener('click', function () {
                 viewer.plans.goTo(model.modelID, plan);
                 viewer.edges.toggle('example', true);
+
+                // Export PlanBtns
+                toggleOnExportPlanBtn(currentPlan.name)
             })
         }
         createInput(addEvent)

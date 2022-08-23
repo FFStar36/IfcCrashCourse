@@ -1,62 +1,59 @@
 <div class="container-fluid mt-5">
     <div class="row">
         <div class="col-sm">
-            <div class="card" style="width: 100vw; height:70vh">
+            <div class="card" style="width: 100vw; height:75vh">
                 <div class="card-body">
-                    <h5 class="card-title">Model title</h5>
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-2">
-                                <div class="card-body">
+                            <div class="col-2 p-0">
+                                <div class="card-body p-0" id="scrollbar" style="position: fixed; height:70vh; width: 16%">
+                                    <h3 class="card-title">Model title</h3>
+                                    <h5>IFC-Tree</h5>
                                     <div class="ifc-tree-menu">
-                                        <ul id="myUL">
+                                        <ul id="myUL m-0">
                                             <li id="tree-root">
                                             </li>
                                         </ul>
                                     </div>
-
+                                    <h5>Element pro Etage</h5>
                                     <div class="ifcStorey">
-                                        <ul id="myUL">
-                                            <div id="ifcStorey">
+                                        <ul id="myUL m-0">
+                                            <div id="ifcStorey" class="m-0">
                                             </div>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-10">
-                                <div class="row justify-content-center">
-                                    <div class="btn-group btn-group-toggle" id = "planViews" data-toggle="buttons" style="position: absolute; margin-top: 2%"></div>
+                                <div class="row justify-content-end" id="pdfExportButton"></div>
+                                <div class="row justify-content-center" id="tools">
+                                    <div class="btn-group btn-group-toggle" id="planViews" data-toggle="buttons"
+                                         style="position: absolute; margin-top: 2%"></div>
+                                    <button id="clipperButton"></button>
+                                    <button id="measureButton"></button>
+                                    <div class="loading" id="loading"><span>.</span><span>.</span><span>.</span></div>
                                 </div>
-
-                                <div id="viewer-container" style="width: 100vw; height:65vh"></div>
-
-
+                                <div id="viewer-container" style="width: 100vw; height:70vh">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
     </div>
 </div>
-
 
 <div id="button-container"></div>
 
 
-
-<button id ="clipperButton">Schneiden</button>
-<button id ="measureButton">Messen</button>
-
-
-
-<div id = info>
-    <table name="pickedInfo">
-        <tr>
-            <td>type</td>
-            <td>quantity</td>
-        </tr>
-    </table>
-</div>
+<!--<div id=info>-->
+<!--    <table name="pickedInfo">-->
+<!--        <tr>-->
+<!--            <td>type</td>-->
+<!--            <td>quantity</td>-->
+<!--        </tr>-->
+<!--    </table>-->
+<!--</div>-->
 
 <script type="module" src="/javascripts/bundle.js"></script>
