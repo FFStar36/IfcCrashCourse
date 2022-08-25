@@ -1,0 +1,41 @@
+<% layout('layouts/boilerplate')%>
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1 class="text-center">New  Model</h1>
+        <form action="/ifcModel" method="POST">
+            <div class="mb-3">
+                <label class="form-label" for="title">Title</label>
+                <input class="form-control" type="text" id="title" name="ifcModel[title]">
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="location">Location</label>
+                <input class="form-control" type="text" id="location" name="ifcModel[location]" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" type="text" id="description" name="ifcModel[description]"
+                          required></textarea>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="mb-3">
+                <input type="file" id="file-input">
+            </div>
+            <button class="btn btn-success">Add BIM-Model</button>
+            <button class="btn btn-danger float-right" onclick="window.location.href = 'dashboard';">Back</button>
+        </form>
+    </div>
+    <div id="viewer-container">
+
+    </div>
+</div>
+
+<script type="module" src="/javascripts/uploadBundle.js"></script>

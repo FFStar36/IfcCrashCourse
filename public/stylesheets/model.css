@@ -168,14 +168,20 @@ ul, #myUL {
     }
 }
 
-.loading{
+.loadingModel{
     font-size: 10rem;
     position: absolute;
-    margin-top: 10%;
+    margin-top: 15%;
     color: gray;
 }
 
-.loading span {
+.loadingInfo{
+    font-size: 2rem;
+    color: gray;
+    margin-left: 1rem;
+}
+
+#loading span {
     /**
      * Use the blink animation, which is defined above
      */
@@ -198,7 +204,7 @@ ul, #myUL {
     animation-fill-mode: both;
 }
 
-.loading span:nth-child(2) {
+#loading span:nth-child(2) {
     /**
      * Starts the animation of the third dot
      * with a delay of .2s, otherwise all dots
@@ -207,7 +213,7 @@ ul, #myUL {
     animation-delay: .2s;
 }
 
-.loading span:nth-child(3) {
+#loading span:nth-child(3) {
     /**
      * Starts the animation of the third dot
      * with a delay of .4s, otherwise all dots

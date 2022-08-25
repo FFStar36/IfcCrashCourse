@@ -1,33 +1,52 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light align-items-center">
-    <div class="container">
-        <div class="col-md-3.5"></div>
-        <div class="col-md-auto">
-                <!-- Collapsible wrapper -->
-                <div class="collapse navbar-collapse w-auto" id="navbarSupportedContent" style="border-bottom: 3px solid lightgray">
-                    <!-- Navbar brand -->
-                    <a class="navbar-brand pt-1" href="#">
-                        <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Sketch_Logo.svg/400px-Sketch_Logo.svg.png"
-                                height="25"
-                                alt="MDB Logo"
-                                loading="lazy"
-                        />
-                    </a>
+    <div class="container p-0 m-auto">
+        <div class="col-1"></div>
+        <div class="col-auto">
+            <!-- Collapsible wrapper -->
+            <div class="collapse navbar-collapse w-auto" id="navbarSupportedContent"
+                 style="border-bottom: 3px solid lightgray">
+                <!-- Navbar brand -->
+                <a class="navbar-brand pt-1" href="#">
+                    <img
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Sketch_Logo.svg/400px-Sketch_Logo.svg.png"
+                            height="25"
+                            alt="MDB Logo"
+                            loading="lazy"
+                    />
+                </a>
 
-                    <!-- Right Items -->
-                    <ul class="navbar-nav pt-1">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/" style="font-size:1.5rem">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/model" style="font-size:1.5rem">Model</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/editTimetable" style="font-size:1.5rem"> Edit Timetable</a>
-                        </li>
-                    </ul>
-                </div>
+                <!-- Right Items -->
+                <ul class="navbar-nav pt-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ifcModel/dashboard" style="font-size:1.5rem">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/model" style="font-size:1.5rem">Model</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/editTimetable" style="font-size:1.5rem"> Edit Timetable</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class="col-md-3.5"></div>
+        <div class="col-1">
+            <ul class="navbar-nav pt-1" style="margin-left: 200px">
+                <% if(!currentUser) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login" style="font-size:1.5rem">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="font-size:1.5rem">|</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register" style="font-size:1.5rem">Register</a>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item" style="font-size:1.5rem">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
     </div>
 </nav>

@@ -22,7 +22,7 @@ async function loadIfc(url) {
     await exportFloorPlans(viewer, model)
     await showFloorPlans(viewer, model)
 
-    // Planes
+    // Planesno
     let clippingPlanesActive = false
     const clipperButton = document.getElementById("clipperButton")
 
@@ -92,8 +92,11 @@ async function loadIfc(url) {
 
 await loadIfc("../../../wasm/05.ifc")
     .then(() =>{
-        let loadingContainer = document.getElementById("loading")
-        loadingContainer.style.display = "none"
+        let loadingElements = document.querySelectorAll('[id=loading]');
+
+        for(let i = 0; i < loadingElements.length; i++){
+            loadingElements[i].style.display = "none"
+        }
     })
 
 // Props
