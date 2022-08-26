@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-md-6 offset-md-3">
         <h1 class="text-center">New  Model</h1>
-        <form action="/ifcModel" method="POST">
+        <form action="/ifcModel" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label" for="title">Title</label>
                 <input class="form-control" type="text" id="title" name="ifcModel[title]">
@@ -26,16 +26,20 @@
                     Looks good!
                 </div>
             </div>
-            <div class="mb-3">
-                <input type="file" id="file-input">
+            <div class="custom-file mb-3">
+                <input type="file" id="file" name="file" class="custom-file-input"
+                       required>
+                <label for="file" class="custom-file-label">Choose IFC-File</label>
             </div>
+            <div class="mb-3 mt-2">
             <button class="btn btn-success">Add BIM-Model</button>
             <button class="btn btn-danger float-right" onclick="window.location.href = 'dashboard';">Back</button>
+            </div>
         </form>
     </div>
-    <div id="viewer-container">
+<!--    <div id="viewer-container">-->
 
-    </div>
+<!--    </div>-->
 </div>
 
-<script type="module" src="/javascripts/uploadBundle.js"></script>
+<!--<script type="module" src="/javascripts/uploadBundle.js"></script>-->

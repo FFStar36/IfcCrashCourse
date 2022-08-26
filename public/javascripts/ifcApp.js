@@ -5,7 +5,33 @@ import {createTreeMenu} from './costumeIfcFunctions/treeMenu'
 import {exportFloorPlans} from './costumeIfcFunctions/exportFloorPlans'
 import {showFloorPlans} from "./costumeIfcFunctions/showFloorPlans";
 
+// const mongoose = require("mongoose");
+import {Grid} from  "../../node_modules/gridfs-stream";
+
+
+// // neu
+// const dbUrl = 'mongodb://localhost:27017/ifc';
+//
+// mongoose.connect(dbUrl, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// });
+//
+// const db = mongoose.connection;
+// // SetUp GridFs
+// let gfs
+// db.once("open", ()=>{
+//     // Stream
+//     gfs = Grid(db.db, mongoose.mongo)
+//     gfs.collection("uploads")
+// })
+
+
 async function loadIfc(url) {
+
+    let uploadID = document.getElementById('uploadID').textContent
+    // const readstream = gfs.createReadStream(uploadID);
+    // console.log(readstream)
 
     const container = document.getElementById('viewer-container');
     const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xf8f9fa) });

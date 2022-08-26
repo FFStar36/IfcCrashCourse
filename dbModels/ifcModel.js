@@ -22,6 +22,7 @@ const IfcModelSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
+    uploadID: String,
     // reviews: [
     //     {
     //         type: Schema.Types.ObjectId,
@@ -29,6 +30,8 @@ const IfcModelSchema = new Schema({
     //     }
     // ]
 }, opts);
+
+
 
 IfcModelSchema.virtual('properties.popUpMarkup').get(function () {
     return `

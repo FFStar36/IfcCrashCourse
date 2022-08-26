@@ -9,30 +9,25 @@ const app = express();
 const session = require("express-session")
 const User =require("./dbModels/user")
 const flash = require('connect-flash');
-
 const passport = require("passport")
 const LocalStrategy = require("passport-local")
-// const ExpressError = require('./utils/ExpressError');
-// const MongoDBStore = require("connect-mongo")(session);
-
+const Grid = require("gridfs-stream")
 
 
 const dbUrl = 'mongodb://localhost:27017/ifc';
 
-
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
-    // useCreateIndex: true,
     useUnifiedTopology: true,
-    // useFindAndModify: false
 });
 app.use(express.urlencoded({ extended: true }));
 
-const secret = 'Fische';
-
 const db = mongoose.connection;
+
+// Setup Mongo
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
+    // Setup GridFs
     console.log("Database connected");
 });
 
@@ -42,6 +37,7 @@ db.once("open", () => {
 //     touchAfter: 24 * 60 * 60
 // });
 
+const secret = 'Fische';
 const sessionConfig = {
     // store,
     name: 'session',
@@ -58,20 +54,15 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 
-
 app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'))
 
-
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(methodOverride('_method'));
-
 app.use(flash());
-
 app.use(passport.initialize())
 app.use(passport.session())
-
 
 passport.use(new LocalStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser()) // start Session
@@ -98,9 +89,10 @@ app.get('/editTimetable', (req, res) => {
     res.render('module/editTimetable')
 });
 
-// app.all('*', (req, res, next) => {
-//     next(new ExpressError('Page Not Found', 404))
-// })
+app.all('*', (req, res, next) => {
+    // next(new ExpressError('Page Not Found', 404))
+    res.send("Page Not Found")
+})
 
 const port = 3000;
 app.listen(port, () => {
