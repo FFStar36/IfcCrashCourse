@@ -5,9 +5,10 @@ const Grid = require("gridfs-stream")
 const path = require("path");
 const mongoose = require("mongoose");
 
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/ifc'
 // Storage Obj
 const storage = new GridFsStorage({
-    url: 'mongodb://localhost:27017/ifc',
+    url: dbUrl,
     file: (req, file) => {
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {

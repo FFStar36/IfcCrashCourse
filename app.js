@@ -15,7 +15,6 @@ const User =require("./dbModels/user")
 const flash = require('connect-flash');
 const passport = require("passport")
 const LocalStrategy = require("passport-local")
-const Grid = require("gridfs-stream")
 const MongoDBStore = require("connect-mongo")
 
 
