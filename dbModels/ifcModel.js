@@ -22,6 +22,7 @@ const IfcModelSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
+    date: String,
     uploadID: String,
     // reviews: [
     //     {

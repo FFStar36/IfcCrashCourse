@@ -84,10 +84,6 @@ app.get('/', (req, res) => {
     res.render('home')
 });
 
-app.get('/editTimetable', (req, res) => {
-    // es fehlt ID zum bearbeiten etc. Eigentlich /:id/edit
-    res.render('module/editTimetable')
-});
 
 app.all('*', (req, res, next) => {
     // next(new ExpressError('Page Not Found', 404))

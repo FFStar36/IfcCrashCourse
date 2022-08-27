@@ -1,7 +1,3 @@
-import require$$0$1 from 'util';
-import require$$0 from 'events';
-import require$$1 from 'stream';
-
 /**
  * @license
  * Copyright 2010-2022 Three.js Authors
@@ -92560,13 +92556,14 @@ class IfcManager extends IfcComponent {
             const firstModel = Boolean(this.context.items.ifcModels.length === 0);
             const settings = this.loader.ifcManager.state.webIfcSettings;
             const fastBools = (settings === null || settings === void 0 ? void 0 : settings.USE_FAST_BOOLS) || true;
+            const coordsToOrigin = (settings === null || settings === void 0 ? void 0 : settings.COORDINATE_TO_ORIGIN) || false;
             await this.loader.ifcManager.applyWebIfcConfig({
-                COORDINATE_TO_ORIGIN: firstModel,
+                COORDINATE_TO_ORIGIN: firstModel && coordsToOrigin,
                 USE_FAST_BOOLS: fastBools
             });
             const ifcModel = await this.loader.loadAsync(url, onProgress);
             this.addIfcModel(ifcModel);
-            if (firstModel) {
+            if (firstModel && coordsToOrigin) {
                 const matrixArr = await this.loader.ifcManager.ifcAPI.GetCoordinationMatrix(ifcModel.modelID);
                 const matrix = new Matrix4().fromArray(matrixArr);
                 this.loader.ifcManager.setupCoordinationMatrix(matrix);
@@ -94539,6 +94536,8 @@ class CameraControls extends EventDispatcher {
                     .add(planeY.multiplyScalar(this._dollyControlCoord.y * worldToScreen));
                 this._targetEnd.lerp(cursor, lerpRatio);
                 this._target.copy(this._targetEnd);
+                // target position may be moved beyond boundary.
+                this._boundary.clampPoint(this._targetEnd, this._targetEnd);
             }
             else if (isOrthographicCamera(this._camera)) {
                 const camera = this._camera;
@@ -94549,6 +94548,8 @@ class CameraControls extends EventDispatcher {
                 const cursor = _v3C.copy(worldPosition).add(quaternion.multiplyScalar(distance));
                 this._targetEnd.lerp(cursor, 1 - camera.zoom / this._dollyControlAmount);
                 this._target.copy(this._targetEnd);
+                // target position may be moved beyond boundary.
+                this._boundary.clampPoint(this._targetEnd, this._targetEnd);
             }
             this._dollyControlAmount = 0;
         }
@@ -95209,7 +95210,6 @@ class IfcCamera extends IfcComponent {
     //   return this.currentNavMode as OrbitControl;
     // }
     setupCameras() {
-        this.setCameraPositionAndTarget(this.perspectiveCamera);
         this.setCameraPositionAndTarget(this.perspectiveCamera);
     }
     setCameraPositionAndTarget(camera) {
@@ -97358,7 +97358,7 @@ class IfcRenderer extends IfcComponent {
         this.blocked = false;
         this.context = context;
         this.container = context.options.container;
-        this.renderer = new WebGLRenderer({ alpha: true });
+        this.renderer = new WebGLRenderer({ alpha: true, antialias: true });
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.setupRenderers();
         this.postProduction = new Postproduction(this.context, this.renderer);
@@ -103491,10 +103491,22 @@ class IfcContext {
                 return;
             if (this.stats)
                 this.stats.begin();
-            requestAnimationFrame(this.render);
+            const isWebXR = this.options.webXR || false;
+            if (isWebXR) {
+                this.renderForWebXR();
+            }
+            else {
+                requestAnimationFrame(this.render);
+            }
             this.updateAllComponents();
             if (this.stats)
                 this.stats.end();
+        };
+        this.renderForWebXR = () => {
+            const newAnimationLoop = () => {
+                this.getRenderer().render(this.getScene(), this.getCamera());
+            };
+            this.getRenderer().setAnimationLoop(newAnimationLoop);
         };
         this.resize = () => {
             this.updateAspect();
@@ -115117,781 +115129,7 @@ async function showFloorPlans(viewer, model){
     }
 }
 
-var gridfsStream = {exports: {}};
-
-var lib = {exports: {}};
-
-var writestream = {exports: {}};
-
-/*
- * FlushWritable
- * Copyright 2014 Tom Frost
- */
-
-var EventEmitter = require$$0.EventEmitter,
-	Writable = require$$1.Writable,
-	util = require$$0$1;
-
-/**
- * FlushWritable is a drop-in replacement for stream.Writable that implements
- * the Transform stream's _flush() method.  FlushWritable is meant to be
- * extended, just like stream.Writable.  However, in the child class's
- * prototype, a method called _flush(cb) can be defined that will halt the
- * firing of the 'finish' event until the callback is called.  If the callback
- * if called with a truthy first argument, 'error' is emitted instead.
- * @param {Object} [opts] Options to configure this Writable stream.  See the
- *      Node.js docs for stream.Writable.
- * @constructor
- */
-function FlushWritable(opts) {
-	Writable.call(this, opts);
-}
-util.inherits(FlushWritable, Writable);
-
-FlushWritable.prototype.emit = function(evt) {
-	if (evt === 'finish' && this._flush && !Writable.prototype._flush) {
-		this._flush(function(err) {
-			if (err)
-				EventEmitter.prototype.emit.call(this, 'error', err);
-			else
-				EventEmitter.prototype.emit.call(this, 'finish');
-		}.bind(this));
-	}
-	else {
-		var args = Array.prototype.slice.call(arguments);
-		EventEmitter.prototype.emit.apply(this, args);
-	}
-};
-
-var FlushWritable_1 = FlushWritable;
-
-(function (module, exports) {
-	/**
-	 * Module dependencies
-	 */
-
-	var util = require$$0$1;
-	//var Writable  = require('stream').Writable;
-
-	// This is a workaround to implement a _flush method for Writable (like for Transform) to emit the 'finish' event only after all data has been flushed to the underlying system (GridFS). See https://www.npmjs.com/package/flushwritable and https://github.com/joyent/node/issues/7348
-	var FlushWritable = FlushWritable_1;
-
-	/**
-	 * expose
-	 * @ignore
-	 */
-
-	module.exports = GridWriteStream;
-
-	/**
-	 * GridWriteStream
-	 *
-	 * @param {Grid} grid
-	 * @param {Object} options (optional)
-	 */
-
-	function GridWriteStream (grid, options) {
-		if (!(this instanceof GridWriteStream))
-			return new GridWriteStream(grid, options);
-
-		FlushWritable.call(this);
-		this._opened = false;
-		this._opening = false;
-		this._writable = true;
-		this._closing = false;
-		this._destroyed = false;
-		this._errorEmitted = false;
-		this._grid = grid;
-
-		// a bit backwards compatible
-		if (typeof options === 'string') {
-			options = { filename: options };
-		}
-		this.options = options || {};
-		if(this.options._id) {
-			this.id = grid.tryParseObjectId(this.options._id);
-
-			if(!this.id) {
-				this.id = this.options._id;
-			}
-		}
-
-		this.name = this.options.filename;  // This may be undefined, that's okay
-
-		if (!this.id) {
-			//_id not passed or unparsable? This is a new file!
-			this.id = new grid.mongo.ObjectID();
-			this.name = this.name || '';  // A new file needs a name
-		}
-
-		this.mode = 'w'; //Mongodb v2 driver have disabled w+ because of possible data corruption. So only allow `w` for now.
-
-		// The value of this.name may be undefined. GridStore treats that as a missing param
-		// in the call signature, which is what we want.
-		this._store = new grid.mongo.GridStore(grid.db, this.id, this.name, this.mode, this.options);
-
-		this._delayedWrite = null;
-		this._delayedFlush = null;
-		this._delayedClose = null;
-
-		var self = this;
-
-		self._open();
-	}
-
-	/**
-	 * Inherit from stream.Writable (FlushWritable for workaround to defer finish until all data flushed)
-	 * @ignore
-	 */
-
-	util.inherits(GridWriteStream, FlushWritable);
-
-	// private api
-
-	/**
-	 * _open
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._open = function () {
-		if (this._opened) return;
-		if (this._opening) return;
-		this._opening = true;
-
-		var self = this;
-		this._store.open(function (err, gs) {
-			self._opening = false;
-			if (err) return self._error(err);
-			self._opened = true;
-			self.emit('open');
-
-			// If _close was called during _store opening, then it was delayed until now, so do the close now
-			if (self._delayedClose) {
-				var closed = self._delayedClose.cb;
-				self._delayedClose = null;
-				return self._closeInternal(closed);
-			}
-
-			// If _flush was called during _store opening, then it was delayed until now, so do the flush now (it's necessarily an empty GridFS file, no _write could have been called and have finished)
-			if (self._delayedFlush) {
-				var flushed = self._delayedFlush;
-				self._delayedFlush = null;
-				return self._flushInternal(flushed);
-			}
-
-			// If _write was called during _store opening, then it was delayed until now, so do the write now (_flush could not have been called yet as _write has not finished yet)
-			if (self._delayedWrite) {
-				var delayedWrite = self._delayedWrite;
-				self._delayedWrite = null;
-				return self._writeInternal(delayedWrite.chunk, delayedWrite.encoding, delayedWrite.done);
-			}
-		});
-	};
-
-	/**
-	 * _writeInternal
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._writeInternal = function (chunk, encoding, done) {
-		// If destroy or error no more data will be written.
-		if (!this._writable) return;
-
-		var self = this;
-		// Write the chunk to the GridStore. The write head automatically moves along with each write.
-		this._store.write(chunk, function (err, store) {
-			if (err) return self._error(err);
-
-			// Emit the write head position
-			self.emit('progress', store.position);
-
-			// We are ready to receive a new chunk from the writestream - call done().
-			done();
-		});
-	};
-
-	/**
-	 * _write
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._write = function (chunk, encoding, done) {
-		if (this._opening) {
-			// if we are still opening the store, then delay the write until it is open.
-			this._delayedWrite = {chunk: chunk, encoding: encoding, done: done};
-			return;
-		}
-
-		// otherwise, do the write now
-		this._writeInternal(chunk, encoding, done);
-	};
-
-	/**
-	 * _flushInternal
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._flushInternal = function (flushed) {
-		this._close(flushed);
-	};
-
-	/**
-	 * _flush
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._flush = function (flushed) {
-		// _flush is called when all _write() have finished (even if no _write() was called (empty GridFS file))
-
-		if (this._opening) {
-			// if we are still opening the store, then delay the flush until it is open.
-			this._delayedFlush = flushed;
-			return;
-		}
-
-		// otherwise, do the flush now
-		this._flushInternal(flushed);
-	};
-
-
-	/**
-	 * _closeInternal
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._closeInternal = function (cb) {
-		if (!this._opened) return;
-		if (this._closing) return;
-		this._closing = true;
-
-		var self = this;
-		this._store.close(function (err, file) {
-			self._closing = false;
-			self._opened = false;
-			if (err) return self._error(err);
-			self.emit('close', file);
-
-			if (cb) cb();
-		});
-	};
-
-	/**
-	 * _close
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._close = function _close (cb) {
-		if (this._opening) {
-			// if we are still opening the store, then delay the close until it is open.
-			this._delayedClose = { cb: cb };
-			return;
-		}
-
-		// otherwise, do the close now
-		this._closeInternal(cb);
-	};
-
-	/**
-	 * _error
-	 *
-	 * @api private
-	 */
-
-	GridWriteStream.prototype._error = function _error (err) {
-		// Stop receiving more data to write, emit `error` and close the store
-		if (this._errorEmitted) return;
-		this._errorEmitted = true;
-
-		this._writable = false;
-		this.emit('error', err);
-		this._close();
-	};
-
-	// public api
-
-	/**
-	 * destroy
-	 *
-	 * @api public
-	 */
-
-	GridWriteStream.prototype.destroy = function destroy (err) {
-		// Abort the write stream, even if write not completed
-		if (this._destroyed) return;
-		this._destroyed = true;
-
-		var self = this;
-		process.nextTick(function() {
-			self._error(err);
-		});
-	};
-
-
-	/**
-	 * destroySoon
-	 *
-	 * @api public
-	 * @deprecated just use destroy()
-	 */
-
-	GridWriteStream.prototype.destroySoon = function destroySoon () {
-		return this.destroy();
-	};
-} (writestream));
-
-var readstream = {exports: {}};
-
-(function (module, exports) {
-	/**
-	 * Module dependencies
-	 */
-
-	var util = require$$0$1;
-	var Readable  = require$$1.Readable;
-
-	/**
-	 * expose
-	 * @ignore
-	 */
-
-	module.exports = GridReadStream;
-
-	/**
-	 * GridReadStream
-	 *
-	 * @param {Grid} grid
-	 * @param {Object} options
-	 */
-
-	function GridReadStream (grid, options) {
-	  if (!(this instanceof GridReadStream))
-	    return new GridReadStream(grid, options);
-
-	  Readable.call(this);
-	  this._opened = false;
-	  this._opening = false;
-	  this._closing = false;
-	  this._end = false;
-	  this._needToPush = false;
-
-	  this._grid = grid;
-
-	  // a bit backwards compatible
-	  if (typeof options === 'string') {
-	    options = { filename: options };
-	  }
-
-	  this.options = options || {};
-
-	  if(options._id) {
-	    this.id = grid.tryParseObjectId(options._id);
-
-	    if(!this.id) {
-	      this.id = options._id;
-	    }
-	  }
-
-	  this.name = this.options.filename || '';
-	  this.mode = 'r';
-
-	  // If chunk size specified use it for read chunk size otherwise default to 255k (GridStore default). chunkSize and chunk_size in mongodb api so check both.
-	  this._chunkSize = this.options.chunkSize || this.options.chunk_size || 1024 * 255;
-
-	  this.range = this.options.range || { startPos: 0, endPos: undefined };
-	  if (typeof(this.range.startPos) === 'undefined') {
-	    this.range.startPos = 0;
-	  }
-
-	  this._currentPos = this.range.startPos;
-
-	  var options = {};
-	  for (var i in this.options) { options[i] = this.options[i]; }
-	  options.root || (options.root = this._grid.curCol);
-
-	  this._store = new grid.mongo.GridStore(grid.db, this.id || new grid.mongo.ObjectID(), this.name, this.mode, options);
-	  // Workaround for Gridstore issue https://github.com/mongodb/node-mongodb-native/pull/930
-	  if (!this.id) {
-	    // var REFERENCE_BY_FILENAME = 0,
-	    this._store.referenceBy = 0;
-	  }
-
-	  var self = this;
-
-	  //Close the store once `end` received
-	  this.on('end', function() {
-	    self._end = true;
-	    self._close();
-	  });
-
-	  process.nextTick(function() {
-	    self._open();
-	  });
-	}
-
-	/**
-	 * Inherit from stream.Readable
-	 * @ignore
-	 */
-
-	util.inherits(GridReadStream, Readable);
-
-	/**
-	 * _open
-	 *
-	 * @api private
-	 */
-
-	GridReadStream.prototype._open = function _open () {
-	  if (this._opening) return;
-	  this._opening = true;
-
-	  var self = this;
-
-	  // Open the sore
-	  this._store.open(function (err, gs) {
-	    if (err) return self._error(err);
-
-	    // Find the length of the file by setting the head to the end of the file and requesting the position
-	    self._store.seek(0, self._grid.mongo.GridStore.IO_SEEK_END, function(err) {
-	        if (err) return self._error(err);
-
-	        // Request the position of the end of the file
-	        self._store.tell(function(err, position) {
-	        if (err) return self._error(err);
-
-	            // Calculate the correct end position either from EOF or end of range. Also handle incorrect range request.
-	            if (!self.range.endPos || self.range.endPos > position-1) {self.range.endPos = position - 1;}
-	            // Set the read head to the beginning of the file or start position if specified
-	            self._store.seek(self.range.startPos, self._grid.mongo.GridStore.IO_SEEK_SET, function(err) {
-	              if (err) return self._error(err);
-
-	              // The store is now open
-	              self.emit('open');
-	              self._opened = true;
-
-	              // If `_read()` was already called then we need to start pushing data to the stream. Otherwise `_read()` will handle this once called from stream.
-	              if (self._needToPush) self._push();
-	            });
-	        });
-	    });
-	  });
-	};
-
-	/**
-	 * _read
-	 *
-	 * @api private
-	 */
-
-	// `_read()` will be called when the stream wants to pull more data in
-	// The advisory `size` argument is ignored in this case and user specified use or default to 255kk.
-	GridReadStream.prototype._read = function _read (size) {
-	  var self = this;
-
-	  // Set `_needToPush` to true because the store may still be closed if data is immediately piped. Once the store is open `_needToPush` is checked and _push() called if necessary.
-	  self._needToPush = true;
-
-	  // The store must be open
-	  if (!this._opened) return;
-
-	  // Read data from GridStore and push to stream
-	  self._push();
-	};
-
-	/**
-	 * _push
-	 *
-	 * @api private
-	 */
-
-	GridReadStream.prototype._push = function _push () {
-	  var self = this;
-
-	  // Do not continue if the store is closed
-	  if (!this._opened) return self._error('Unable to push data. Expected gridstore to be open');
-
-	  // Check if EOF, if the full requested range has been pushed or if the stream must be destroyed. If so than push EOF-signalling `null` chunk
-	  if ( !this._store.eof() && (self._currentPos <= self.range.endPos) && !this._end) {
-
-	    // Determine the chunk size for the read from GridStore
-	    // Use default chunk size or user specified
-	    var readChunkSize = self._chunkSize;
-	    // Override the chunk size if the chunk size is more than the size that is left until EOF/range
-	    if (self.range.endPos-self._currentPos < self._chunkSize) {readChunkSize = self.range.endPos - self._currentPos + 1;}
-	    // Read the chunk from GridSore. Head moves automatically after each read.
-	    self._store.read(readChunkSize,function(err, data) {
-
-	      // If error stop and close the store
-	      if (err) return self._error(err);
-
-	      // Advance the current position of the read head
-	      self._currentPos += data.length;
-
-	      // Push data
-	      if (!self._end) self.push(data);
-	    });
-
-
-	  } else {
-	    // Push EOF-signalling `null` chunk
-	    this._end = true;
-	    self.push(null);
-	  }
-	};
-
-	/**
-	 * _close
-	 *
-	 * @api private
-	 */
-
-	GridReadStream.prototype._close = function _close () {
-	  var self = this;
-	  if (!self._opened) return;
-	  if (self._closing) return;
-	  this._closing = true;
-
-	  // Close the store and emit `close` event
-	  self._store.close(function (err) {
-	    if (err) return self._error(err);
-	    self.emit('close');
-	  });
-	};
-
-	/**
-	 * _error
-	 *
-	 * @api private
-	 */
-
-	GridReadStream.prototype._error = function _error (err) {
-	  // Set end true so that no further reads from GridSotre are possible and close the store
-	  this._end = true;
-
-	  // Emit the error event
-	  this.emit('error', err);
-
-	  // Close the gridsore if an error is received.
-	  this._close();
-	};
-
-	/**
-	 * destroy
-	 *
-	 * @api public
-	 */
-
-	GridReadStream.prototype.destroy = function destroy () {
-	  // Set end true so that no further reads from GridSotre are possible and close the store
-	  this._end = true;
-	  this._close();
-	};
-} (readstream));
-
-(function (module, exports) {
-	// gridfs-stream
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var GridWriteStream = writestream.exports;
-	var GridReadStream = readstream.exports;
-
-	/**
-	 * Grid constructor
-	 *
-	 * @param {mongo.Db} db - an open mongo.Db instance
-	 * @param {mongo} [mongo] - the native driver you are using
-	 */
-
-	function Grid (db, mongo) {
-	  if (!(this instanceof Grid)) {
-	    return new Grid(db, mongo);
-	  }
-
-	  mongo || (mongo = Grid.mongo ? Grid.mongo : undefined);
-
-	  if (!mongo) throw new Error('missing mongo argument\nnew Grid(db, mongo)');
-	  if (!db) throw new Error('missing db argument\nnew Grid(db, mongo)');
-
-	  // the db must already be open b/c there is no `open` event emitted
-	  // in old versions of the driver
-	  this.db = db;
-	  this.mongo = mongo;
-	  this.curCol = this.mongo.GridStore ? this.mongo.GridStore.DEFAULT_ROOT_COLLECTION : 'fs';
-	}
-
-	/**
-	 * Creates a writable stream.
-	 *
-	 * @param {Object} [options]
-	 * @return Stream
-	 */
-
-	Grid.prototype.createWriteStream = function (options) {
-	  return new GridWriteStream(this, options);
-	};
-
-	/**
-	 * Creates a readable stream. Pass at least a filename or _id option
-	 *
-	 * @param {Object} options
-	 * @return Stream
-	 */
-
-	Grid.prototype.createReadStream = function (options) {
-	  return new GridReadStream(this, options);
-	};
-
-	/**
-	 * The collection used to store file data in mongodb.
-	 * @return {Collection}
-	 */
-
-	Object.defineProperty(Grid.prototype, 'files', {
-	  get: function () {
-	    if (this._col) return this._col;
-	    return this.collection();
-	  }
-	});
-
-	/**
-	 * Changes the default collection to `name` or to the default mongodb gridfs collection if not specified.
-	 *
-	 * @param {String|undefined} name root gridfs collection name
-	 * @return {Collection}
-	 */
-
-	Grid.prototype.collection = function (name) {
-	  this.curCol = name || this.curCol || this.mongo.GridStore.DEFAULT_ROOT_COLLECTION;
-	  return this._col = this.db.collection(this.curCol + ".files");
-	};
-
-	/**
-	 * Removes a file by passing any options, at least an _id or filename
-	 *
-	 * @param {Object} options
-	 * @param {Function} callback
-	 */
-
-	Grid.prototype.remove = function (options, callback) {
-	  var _id;
-	  if (options._id) {
-	    _id = this.tryParseObjectId(options._id) || options._id;
-	  }
-	  if (!_id) {
-	    _id = options.filename;
-	  }
-	  return this.mongo.GridStore.unlink(this.db, _id, options, callback);
-	};
-
-	/**
-	 * Checks if a file exists by passing a filename
-	 *
-	 * @param {Object} options
-	 * @param {Function} callback
-	 */
-
-	Grid.prototype.exist = function (options, callback) {
-	    var _id;
-	    if (options._id) {
-	        _id = this.tryParseObjectId(options._id) || options._id;
-	    }
-	    if (!_id) {
-	        _id = options.filename;
-	    }
-	    return this.mongo.GridStore.exist(this.db, _id, options.root, callback);
-	};
-
-	/**
-	 * Find file by passing any options, at least an _id or filename
-	 *
-	 * @param {Object} options
-	 * @param {Function} callback
-	 */
-
-	Grid.prototype.findOne = function (options, callback) {
-	  if ('function' != typeof callback) {
-	    throw new Error('findOne requires a callback function');
-	  }
-	  var find = {};
-	  for (var n in options) {
-	    if (n != 'root') {
-	      find[n] = options[n];
-	    }
-	  }
-	  if (find._id) {
-	    find._id = this.tryParseObjectId(find._id) || find._id;
-	  }
-	  var collection = options.root  && options.root != this.curCol ? this.db.collection(options.root + ".files") : this.files;
-	  if (!collection) {
-	    return callback(new Error('No collection specified'));
-	  }
-	  collection.find(find, function(err, cursor) {
-	    if (err) { return callback(err); }
-	    if (!cursor) { return callback(new Error('Collection not found')); }
-	    cursor.nextObject(callback);
-	  });
-	};
-
-	/**
-	 * Attemps to parse `string` into an ObjectId
-	 *
-	 * @param {GridReadStream} self
-	 * @param {String|ObjectId} string
-	 * @return {ObjectId|Boolean}
-	 */
-
-	Grid.prototype.tryParseObjectId = function tryParseObjectId (string) {
-	  try {
-	    return new this.mongo.ObjectID(string);
-	  } catch (_) {
-	    return false;
-	  }
-	};
-
-	/**
-	 * expose
-	 */
-
-	module.exports = Grid;
-} (lib));
-
-(function (module, exports) {
-	module.exports = lib.exports;
-} (gridfsStream));
-
-// // neu
-// const dbUrl = 'mongodb://localhost:27017/ifc';
-//
-// mongoose.connect(dbUrl, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-// });
-//
-// const db = mongoose.connection;
-// // SetUp GridFs
-// let gfs
-// db.once("open", ()=>{
-//     // Stream
-//     gfs = Grid(db.db, mongoose.mongo)
-//     gfs.collection("uploads")
-// })
-
-
 async function loadIfc(url) {
-
-    document.getElementById('uploadID').textContent;
-    // const readstream = gfs.createReadStream(uploadID);
-    // console.log(readstream)
 
     const container = document.getElementById('viewer-container');
     const viewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xf8f9fa) });
@@ -115975,8 +115213,9 @@ async function loadIfc(url) {
         }
     };
 }
+let loadPath = document.getElementById('pathIFC').textContent;
 
-await loadIfc("../../../wasm/05.ifc")
+await loadIfc(loadPath)
     .then(() =>{
         let loadingElements = document.querySelectorAll('[id=loading]');
 

@@ -5,7 +5,7 @@
         <form action="/ifcModel" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label" for="title">Title</label>
-                <input class="form-control" type="text" id="title" name="ifcModel[title]">
+                <input class="form-control" type="text" id="title" name="ifcModel[title]" required>
                 <div class="valid-feedback">
                     Looks good!
                 </div>
@@ -27,9 +27,9 @@
                 </div>
             </div>
             <div class="custom-file mb-3">
-                <input type="file" id="file" name="file" class="custom-file-input"
+                <input type="file" id="file" name="file" class="custom-file-input" accept=".ifc"
                        required>
-                <label for="file" class="custom-file-label">Choose IFC-File</label>
+                <label for="file" class="custom-file-label" id="customFileInput">Choose IFC-File</label>
             </div>
             <div class="mb-3 mt-2">
             <button class="btn btn-success">Add BIM-Model</button>
@@ -37,9 +37,12 @@
             </div>
         </form>
     </div>
-<!--    <div id="viewer-container">-->
-
-<!--    </div>-->
 </div>
 
-<!--<script type="module" src="/javascripts/uploadBundle.js"></script>-->
+<script>
+    document.getElementById("file").addEventListener('change', function (e) {
+        var name = document.getElementById("file").files[0].name;
+        var nextSibling = e.target.nextElementSibling
+        nextSibling.innerText = name
+    })
+</script>
