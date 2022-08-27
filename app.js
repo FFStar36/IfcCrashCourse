@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV !== "production"){
+    require("dotenv").config()
+}
+
 const express = require('express');
 const ejsMate = require('ejs-mate');
 const path = require('path');
@@ -12,9 +16,10 @@ const flash = require('connect-flash');
 const passport = require("passport")
 const LocalStrategy = require("passport-local")
 const Grid = require("gridfs-stream")
+const MongoDBStore = require("connect-mongo")
 
 
-const dbUrl = 'mongodb://localhost:27017/ifc';
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/ifc'
 
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
@@ -31,15 +36,20 @@ db.once("open", () => {
     console.log("Database connected");
 });
 
-// const store = new MongoDBStore({
-//     url: dbUrl,
-//     secret,
-//     touchAfter: 24 * 60 * 60
-// });
+const secret = process.env.sessionSecret;
 
-const secret = 'Fische';
+const store = MongoDBStore.create({
+    mongoUrl: dbUrl,
+    secret,
+    touchAfter: 24 * 60 * 60
+});
+
+store.on("error", function (e) {
+    console.log("SESSION STORE ERROR", e)
+})
+
 const sessionConfig = {
-    // store,
+    store,
     name: 'session',
     secret,
     resave: false,
