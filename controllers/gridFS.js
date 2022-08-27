@@ -1,8 +1,8 @@
 const Grid = require('gridfs-stream')
 const mongoose = require('mongoose');
 const IfcModel = require("../dbModels/ifcModel");
-const ifcModel = require("./ifcModel");
-const dbUrl = 'mongodb://localhost:27017/ifc';
+
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/ifc'
 
 module.exports.getUploadedIFC = async (req, res) => {
     const conn = mongoose.createConnection(dbUrl);
