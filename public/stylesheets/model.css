@@ -20,7 +20,7 @@
 
 #ifc-tree-menu {
     position: absolute;
-    overflow-y: scroll;
+    overflow-y: auto;
     background-color: white;
     height: 70vh;
 }

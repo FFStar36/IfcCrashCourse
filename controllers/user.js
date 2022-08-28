@@ -27,7 +27,7 @@ module.exports.renderLogin = (req, res) => {
 module.exports.login = (req, res) => {
     req.flash('success', 'welcome back!');
     delete req.session.returnTo;
-    res.redirect("/");
+    res.redirect("ifcModel/dashboard");
 }
 
 module.exports.logout = (req, res) => {
