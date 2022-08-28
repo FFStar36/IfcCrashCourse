@@ -11,8 +11,8 @@ Step-by-step guide:
 4. You can add more models and manage/view them on your dashboard page or open the most recently viewed by clicking on the model button located in the navbar.  
 
 Test-Account:
-	User: ffstar36	
-	PW:   test
+- User: ffstar36	
+- PW:   test
 
 Special IFC-Viewer Features: 
 1. Hiding/Displaying the IFC-elementtypes per storey 
