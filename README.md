@@ -22,4 +22,4 @@ Special IFC-Viewer Features:
 Future Features:
 - Geometry Preprocessing during the uploading process
 - Gis-Integration via Mapbox for displaying a location preview map on the dashboard page/in the IFC-Viewer 
-- Create a construction schedule/Timetable
+- Create a construction schedule/timetable
