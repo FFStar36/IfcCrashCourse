@@ -4,7 +4,7 @@ Repository for the final app of the IFCjs-crash-course.
 Deployed App on:
 https://mighty-ridge-23430.herokuapp.com/
 
-Step-by-step guide for the app:
+Step-by-step guide:
 1. Simply log on or register by clicking the buttons in the navbar - no real E-Mail needed 😉
 2. As a logged in user open the dashboard page
 3. Click on the New button and upload an IFC. After some seconds your BIM-Model should be visible
