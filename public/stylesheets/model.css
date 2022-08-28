@@ -107,17 +107,16 @@ ul, #myUL {
 
 
     height: 50px;
-    width: 50px;
-    border-radius: 50%;
+    width: 80px;
+    /*border-radius: 50%;*/
     border: 2px solid gray;
     transition-duration: 0.4s;
     cursor: pointer;
-    background-color: white;
     bottom: 10%;
 }
 
 #measureButton{
-    margin-right: 5%;
+    margin-right: 150px;
 
     background-image: url("../icons/measure.png");
     background-color: white;
@@ -127,7 +126,7 @@ ul, #myUL {
 }
 
 #clipperButton{
-    margin-left: 5%;
+    margin-left: 150px;
 
     background-image: url("../icons/cut.png");
     background-color: white;
@@ -137,7 +136,7 @@ ul, #myUL {
 }
 
 #scrollbar{
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 
