@@ -1,10 +1,18 @@
-<div class="container">
-
+<link rel="stylesheet" href="/stylesheets/navbar.css">
+<div class="container-float">
+    <!-- Collapsible wrapper -->
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle bg-light" id="navbar-toggle"
+                data-toggle="collapse" data-target=".navbar-collapse">
+            <p style="color: grey">></p>
+        </button>
+    </div>
     <div class="row justify-content-md-center">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+
             <div class="col-md-auto">
-                <!-- Collapsible wrapper -->
-                <div class="collapse navbar-collapse w-auto" id="navbarSupportedContent"
+                <div class="collapse navbar-collapse" id="navbarNav"
                      style="border-bottom: 3px solid lightgray">
                     <!-- Navbar brand -->
                     <a class="navbar-brand pt-1" href="/">
@@ -35,9 +43,8 @@
     </div>
 
     <div style="position: absolute; top:0; right: 5%">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-
-            <ul class="navbar-nav pt-1" style="margin-left: 15%">
+        <nav  class="navbar navbar-expand navbar-light bg-light " >
+            <ul class="navbar-nav pt-1">
                 <% if(!currentUser) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="/login" style="font-size:1.5rem">Login</a>

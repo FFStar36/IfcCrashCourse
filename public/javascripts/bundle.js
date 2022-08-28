@@ -115154,7 +115154,7 @@ async function loadIfc(url) {
         clippingPlanesActive = !clippingPlanesActive;
         viewer.clipper.active = clippingPlanesActive;
         if(clippingPlanesActive) {
-            clipperButton.style.backgroundColor = "#f44336";
+            clipperButton.style.backgroundColor = "#FFD580";
             clipperButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)";
         }else {
             clipperButton.style.backgroundColor = null;
@@ -115172,7 +115172,7 @@ async function loadIfc(url) {
         viewer.dimensions.previewActive = measureActive;
 
         if(measureActive) {
-            measureButton.style.backgroundColor = "#f44336";
+            measureButton.style.backgroundColor = "#FFD580";
             measureButton.style.boxShadow = "-4px 12px 17px -10px rgba(0,0,0,0.44)";
         }else {
             measureButton.style.backgroundColor = null;

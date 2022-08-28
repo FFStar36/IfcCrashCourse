@@ -96,7 +96,7 @@ ul, #myUL {
 }
 
 #measureButton:hover, #clipperButton:hover {
-    background-color: gray;
+    background-color: lightgray;
     box-shadow: -4px 12px 17px -10px rgba(0,0,0,0.44)
 }
 
