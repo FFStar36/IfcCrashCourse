@@ -15,11 +15,11 @@ Test-Account:
 - PW:   test
 
 Special IFC-Viewer Features: 
-1. Hiding/Displaying the IFC-elementtypes per storey 
-2. Generate floorplans views which can be downloaded
-3. Cutting-planes and measuring   
+- Hiding/Displaying the IFC-elementtypes per storey 
+- Generate floorplans views which can be downloaded
+- Cutting-planes and measuring   
 
 Future Features:
-1. Geometry Preprocessing during the uploading process
-2. Gis-Integration via Mapbox for displaying a location preview map on the dashboard page/in the IFC-Viewer 
-3. Timetable for construction site planning
+- Geometry Preprocessing during the uploading process
+- Gis-Integration via Mapbox for displaying a location preview map on the dashboard page/in the IFC-Viewer 
+- Timetable for construction site planning
