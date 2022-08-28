@@ -16,7 +16,6 @@ module.exports.createIfcModel = async (req, res) => {
     ifcModel.date = date.toString()
     await ifcModel.save()
 
-    // console.log(file)
     res.redirect(`ifcModel/${ifcModel._id}`)
 }
 

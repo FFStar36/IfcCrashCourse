@@ -5,17 +5,6 @@ const opts = { toJSON: { virtuals: true } };
 
 const IfcModelSchema = new Schema({
     title: String,
-    // geometry: {
-    //     type: {
-    //         type: String,
-    //         enum: ['Point'],
-    //         required: true
-    //     },
-    //     coordinates: {
-    //         type: [Number],
-    //         required: true
-    //     }
-    // },
     description: String,
     location: String,
     author: {
@@ -24,12 +13,6 @@ const IfcModelSchema = new Schema({
     },
     date: String,
     uploadID: String,
-    // reviews: [
-    //     {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'Review'
-    //     }
-    // ]
 }, opts);
 
 
