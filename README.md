@@ -6,7 +6,7 @@ https://mighty-ridge-23430.herokuapp.com/
 
 Step-by-step guide:
 1. Simply log on or register by pressing the buttons located in the navbar. No real E-Mail needed 😉 or you can use the Test-Account.
-2. As a logged-in user open the dashboard page
+2. Afterwards you should be automatically directed to the dashboard page.
 3. Click on the New button to upload a new IFC-File. After some seconds your BIM-Model should be visible.
 4. You can add more models and manage/view them on your dashboard page or open the most recently viewed by clicking on the model button located in the navbar.  
 
